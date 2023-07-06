@@ -59,7 +59,6 @@ jobs:
           path: test-images
       - name: Push Debian Bullseye image
         id: docker_push_bullseye
-        if: ${{ github.event_name == 'release' }}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -117,7 +116,6 @@ jobs:
           path: test-images
       - name: Push Ubuntu image
         id: docker_push_ubuntu
-        if: ${{ github.event_name == 'release' }}
         uses: docker/build-push-action@v4
         with:
           context: .
