@@ -67,7 +67,7 @@ jobs:
           push: true
           load: false
           platforms: linux/amd64,linux/arm64
-          tags: ijs01140/imagemagick:${{ github.event.release.tag_name }},ijs01140/imagemagick:${{ github.event.release.tag_name }}-bullseye,ijs01140/imagemagick:latest-bullseye,ijs01140/imagemagick:latest
+          tags: ijs01140/imagemagick-docker:${{ github.event.release.tag_name }},ijs01140/imagemagick-docker:${{ github.event.release.tag_name }}-bullseye,ijs01140/imagemagick-docker:latest-bullseye,ijs01140/imagemagick-docker:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
   build-ubuntu:
@@ -125,6 +125,6 @@ jobs:
           push: true
           load: false
           platforms: linux/amd64,linux/arm64
-          tags: ijs01140/imagemagick:${{ github.event.release.tag_name }}-ubuntu,ijs01140/imagemagick:latest-ubuntu
+          tags: ijs01140/imagemagick-docker:${{ github.event.release.tag_name }}-ubuntu,ijs01140/imagemagick-docker:latest-ubuntu
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
