@@ -12,8 +12,12 @@ on:
       - published
 
 jobs:
-  build-debian-bullseye:
+  build-debian:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os-version: ["bookworm", "bullseye"]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -22,51 +26,51 @@ jobs:
         with:
           docker-user: ${{ secrets.DOCKERHUB_USERNAME }}
           docker-password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build Debian Bullseye Image
-        id: docker_build_bullseye
+      - name: Build Debian Image
+        id: docker_build_debian
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.bullseye
+          file: ./Dockerfile.${{ matrix.os-version }}
           push: false
           load: true
-          tags: im-bullseye
+          tags: im-${{ matrix.os-version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-      - name: Testing Debian Bullseye Image
+      - name: Testing Debian Image
         run: |
-          docker run --rm im-bullseye -list configure
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 500 /imgs/test.jpg /imgs/test-resize.jpg
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 500 /imgs/test.jpg webp:/imgs/test-jpg.webp
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 500 /imgs/test.jpg avif:/imgs/test-jpg.avif
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 100 /imgs/test.png /imgs/test-resize.png
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 100 /imgs/test.png webp:/imgs/test-png.webp
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 100 /imgs/test.png avif:/imgs/test-png.avif
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 100 /imgs/test.png jxl:/imgs/test-png.jxl
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye /imgs/test.pdf /imgs/test-pdf.png
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye /imgs/jpg-with-metadata.jpg /imgs/jpg-with-metadata.webp
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -coalesce /imgs/test.gif /imgs/test-gif.webp
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 200 /imgs/test.tiff /imgs/test-resize.tiff
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 200 /imgs/test.tiff webp:/imgs/test-tiff.webp
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 200 /imgs/test.tiff avif:/imgs/test-tiff.avif
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye -resize 200 /imgs/test.tiff jxl:/imgs/test-tiff.jxl
-          docker run --rm -v $(pwd)/test-images:/imgs im-bullseye /imgs/test.jpg -antialias -font DejaVu-Sans -pointsize 20 -gravity Southeast -annotate +15+15 'TEST' /imgs/test-text.jpg
-          docker run --rm im-bullseye -list configure | grep DELEGATES | grep "fontconfig freetype heic jbig jng jpeg jxl lcms lzma png ps tiff webp x xml zlib"
+          docker run --rm im-${{ matrix.os-version }} -list configure
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 500 /imgs/test.jpg /imgs/test-resize.jpg
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 500 /imgs/test.jpg webp:/imgs/test-jpg.webp
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 500 /imgs/test.jpg avif:/imgs/test-jpg.avif
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 100 /imgs/test.png /imgs/test-resize.png
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 100 /imgs/test.png webp:/imgs/test-png.webp
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 100 /imgs/test.png avif:/imgs/test-png.avif
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 100 /imgs/test.png jxl:/imgs/test-png.jxl
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} /imgs/test.pdf /imgs/test-pdf.png
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} /imgs/jpg-with-metadata.jpg /imgs/jpg-with-metadata.webp
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -coalesce /imgs/test.gif /imgs/test-gif.webp
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 200 /imgs/test.tiff /imgs/test-resize.tiff
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 200 /imgs/test.tiff webp:/imgs/test-tiff.webp
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 200 /imgs/test.tiff avif:/imgs/test-tiff.avif
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} -resize 200 /imgs/test.tiff jxl:/imgs/test-tiff.jxl
+          docker run --rm -v $(pwd)/test-images:/imgs im-${{ matrix.os-version }} /imgs/test.jpg -antialias -font DejaVu-Sans -pointsize 20 -gravity Southeast -annotate +15+15 'TEST' /imgs/test-text.jpg
+          docker run --rm im-${{ matrix.os-version }} -list configure | grep DELEGATES | grep "fontconfig freetype heic jbig jng jpeg jxl lcms lzma png ps tiff webp x xml zlib"
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
         with:
-          name: bullseye-tests
+          name: ${{ matrix.os-version }}-tests
           path: test-images
-      - name: Push Debian Bullseye image
-        id: docker_push_bullseye
+      - name: Push Debian image
+        id: docker_push_debian
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile.bullseye
+          file: ./Dockerfile.${{ matrix.os-version }}
           push: true
           load: false
           platforms: linux/amd64,linux/arm64
-          tags: ijs01140/imagemagick-docker:latest-bullseye,ijs01140/imagemagick-docker:latest
+          tags: ijs01140/imagemagick-docker:latest-${{ matrix.os-version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
   build-ubuntu:
